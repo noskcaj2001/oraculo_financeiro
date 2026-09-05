@@ -8,7 +8,6 @@ Copiloto financeiro pessoal que une **gestão de finanças pessoais** (faturas d
 
 - [Visão geral](#visão-geral)
 - [Arquitetura](#arquitetura)
-  - [Grafo `.dot`](#grafo-dot)
   - [Fluxo de dados](#fluxo-de-dados)
 - [Stack tecnológico](#stack-tecnológico)
 - [Módulos e funcionalidades](#módulos-e-funcionalidades)
@@ -41,99 +40,10 @@ Existem **duas interfaces**: o frontend React (produto principal) e um app Strea
 
 ## Arquitetura
 
-### Grafo `.dot`
+![Arquitetura do Oráculo Financeiro](img/graphviz.png)
 
-O grafo completo da arquitetura está em [`docs/architecture.dot`](docs/architecture.dot) (formato Graphviz).
-
-Para renderizar:
-
-```bash
-# instale o graphviz (macOS: brew install graphviz)
-dot -Tpng docs/architecture.dot -o docs/architecture.png
-dot -Tsvg docs/architecture.dot -o docs/architecture.svg
-```
-
-> Sem Graphviz local? Cole o conteúdo abaixo em <https://dreampuf.github.io/GraphvizOnline>.
-
-```dot
-digraph OraculoFinanceiro {
-    rankdir=LR;
-    label="Oráculo Financeiro — B3 + Finanças Pessoais";
-    node [shape=box, style="rounded,filled", fillcolor="#F5F7FA"];
-
-    subgraph cluster_ext {
-        label="Fontes externas"; style="rounded,dashed";
-        yahoo  [label="Yahoo Finance (yfinance)"];
-        rss    [label="Feeds RSS\nInfoMoney · G1 · Exame · Valor"];
-        b3site [label="B3 Investidor\n(PDF consolidado mensal)"];
-        bank   [label="Fatura de cartão (PDF)"];
-        openai [label="OpenAI API\nembeddings · gpt-4o · gpt-4o-mini"];
-    }
-
-    subgraph cluster_ui {
-        label="Interfaces"; style="rounded";
-        react     [label="Frontend React + Vite :5173\nFatura · Dashboard · VisãoGeral\nPatrimônio · B3 · Simulador · Metas"];
-        streamlit [label="App Streamlit :8501\nchat RAG + sinais"];
-    }
-
-    subgraph cluster_api {
-        label="Backend — FastAPI :8000  (backend/api)"; style="rounded";
-        routers  [label="routers/*  /api/{b3,faturas,dashboard,gastos,\nrenda,portfolio,metas,simulador,patrimonio-*,\nfinanciamentos,analise-integrada,transactions}"];
-        pf       [label="modules/personal_finance\npdf_parser (pdfplumber)\nai_extractor / portfolio_extractor (gpt-4o)\ncategorizer"];
-        insights [label="modules/insights_engine\nalertas determinísticos"];
-    }
-
-    subgraph cluster_rag {
-        label="RAG — rag/chain.py  ask()"; style="rounded";
-        retriever [label="retriever.py\nembed + busca Qdrant"];
-        prompts   [label="prompts.py  (v1 / v2)"];
-        chain     [label="chain.ask()\nChatOpenAI(gpt-4o-mini)\n+ juízes MLflow GenAI"];
-    }
-
-    subgraph cluster_data {
-        label="Pipeline de dados — data/  (APScheduler 19h BRT)"; style="rounded";
-        ingest  [label="ingestion/\nb3_fetcher · news_fetcher · realtime_fetcher"];
-        process [label="processing/\nfeature_engineering (ta)\nembeddings (OpenAI)"];
-    }
-
-    subgraph cluster_ml {
-        label="ML — ml/"; style="rounded";
-        mlfeat  [label="features.py\nlabels: retorno fwd 5d ±2%"];
-        mltrain [label="train.py — XGBoost + MLflow"];
-        mlpred  [label="predict.py — gera sinais"];
-        mlmodel [label="models/xgboost_v2.pkl", shape=note];
-    }
-
-    subgraph cluster_store {
-        label="Persistência"; style="rounded";
-        supabase [label="Supabase / PostgreSQL\nprices · signals · embeddings_meta\nincome_entries · portfolio_* · invoices · transactions", shape=cylinder];
-        qdrant   [label="Qdrant :6333\noraculo_financeiro\n(price_summary + news_article)", shape=cylinder];
-        redis    [label="Redis :6379\ncache de cotações", shape=cylinder];
-    }
-
-    mlflow [label="MLflow  ./mlruns\noraculo_rag (traces) · oraculo_sinais (training)"];
-
-    react -> routers [label="HTTP/JSON (TanStack Query)"];
-    streamlit -> chain [label="ask()"];
-    streamlit -> supabase; streamlit -> redis;
-
-    bank -> pf [label="upload PDF"]; b3site -> pf [label="upload PDF"];
-    pf -> openai; pf -> supabase [label="upsert (SHA-256)"];
-    routers -> pf; routers -> insights; routers -> chain [label="/api/b3 chat"];
-    routers -> supabase; routers -> redis;
-
-    retriever -> qdrant; retriever -> openai [label="embed"];
-    chain -> retriever; chain -> prompts; chain -> openai [label="geração + juízes"];
-    chain -> mlflow [label="@mlflow.trace"];
-
-    yahoo -> ingest; rss -> ingest;
-    ingest -> process; ingest -> redis [label="realtime"];
-    process -> supabase [label="upsert_prices"]; process -> qdrant [label="embeddings"]; process -> openai;
-
-    supabase -> mlfeat -> mltrain -> mlmodel -> mlpred -> supabase [label="signals"];
-    mltrain -> mlflow;
-}
-```
+> Grafo gerado a partir de [`docs/architecture.dot`](docs/architecture.dot) (Graphviz). Para regerar após mudanças:
+> `dot -Tpng docs/architecture.dot -o img/graphviz.png` (macOS: `brew install graphviz`).
 
 ### Fluxo de dados
 
