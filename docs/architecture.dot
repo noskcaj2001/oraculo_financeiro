@@ -1,0 +1,117 @@
+// Oráculo Financeiro — arquitetura de alto nível
+// Renderizar:  dot -Tpng docs/architecture.dot -o docs/architecture.png
+//              dot -Tsvg docs/architecture.dot -o docs/architecture.svg
+
+digraph OraculoFinanceiro {
+    rankdir=LR;
+    fontname="Helvetica";
+    labelloc="t";
+    label="Oráculo Financeiro — B3 + Finanças Pessoais";
+    node [fontname="Helvetica", shape=box, style="rounded,filled", fillcolor="#F5F7FA", color="#8895A7"];
+    edge [fontname="Helvetica", fontsize=10, color="#5B6B7C"];
+
+    // ───────────── Fontes externas ─────────────
+    subgraph cluster_ext {
+        label="Fontes externas";
+        style="rounded,dashed"; color="#B0BEC5";
+        yahoo   [label="Yahoo Finance\n(yfinance)"];
+        rss     [label="Feeds RSS\nInfoMoney · G1 · Exame · Valor"];
+        b3site  [label="B3 Investidor\n(PDF consolidado mensal)"];
+        bank    [label="Fatura de cartão\n(PDF)"];
+        openai  [label="OpenAI API\nembeddings · gpt-4o · gpt-4o-mini", fillcolor="#E8F0FE"];
+    }
+
+    // ───────────── Clientes / UI ─────────────
+    subgraph cluster_ui {
+        label="Interfaces";
+        style="rounded"; color="#90CAF9";
+        react     [label="Frontend React + Vite\n:5173\npages: Fatura · Dashboard · VisãoGeral\nPatrimônio · B3 · Simulador · Metas", fillcolor="#E3F2FD"];
+        streamlit [label="App Streamlit\n:8501\nchat RAG + sinais (legado/paralelo)", fillcolor="#E3F2FD"];
+    }
+
+    // ───────────── Backend API ─────────────
+    subgraph cluster_api {
+        label="Backend — FastAPI (:8000)  backend/api";
+        style="rounded"; color="#A5D6A7";
+        routers   [label="routers/*\n/api/{b3,faturas,dashboard,gastos,renda,\nportfolio,metas,simulador,patrimonio-*,\nfinanciamentos,analise-integrada,transactions}", fillcolor="#E8F5E9"];
+        pf        [label="modules/personal_finance\npdf_parser (pdfplumber)\nai_extractor / portfolio_extractor (gpt-4o)\ncategorizer", fillcolor="#E8F5E9"];
+        insights  [label="modules/insights_engine\nalertas determinísticos", fillcolor="#E8F5E9"];
+    }
+
+    // ───────────── RAG ─────────────
+    subgraph cluster_rag {
+        label="RAG — rag/chain.py  ask()";
+        style="rounded"; color="#CE93D8";
+        retriever [label="retriever.py\nembed + busca Qdrant", fillcolor="#F3E5F5"];
+        prompts   [label="prompts.py\nversionamento v1 / v2", fillcolor="#F3E5F5"];
+        chain     [label="chain.ask()\nChatOpenAI(gpt-4o-mini)\n+ juízes MLflow GenAI", fillcolor="#F3E5F5"];
+    }
+
+    // ───────────── Pipeline de dados ─────────────
+    subgraph cluster_data {
+        label="Pipeline de dados — data/  (scheduler APScheduler, 19h BRT)";
+        style="rounded"; color="#FFCC80";
+        ingest   [label="ingestion/\nb3_fetcher · news_fetcher · realtime_fetcher", fillcolor="#FFF3E0"];
+        process  [label="processing/\nfeature_engineering (ta)\nembeddings (OpenAI)", fillcolor="#FFF3E0"];
+    }
+
+    // ───────────── ML ─────────────
+    subgraph cluster_ml {
+        label="ML — ml/";
+        style="rounded"; color="#FFAB91";
+        mlfeat  [label="features.py\nlabels: retorno fwd 5d ±2%", fillcolor="#FBE9E7"];
+        mltrain [label="train.py\nXGBoost + MLflow", fillcolor="#FBE9E7"];
+        mlpred  [label="predict.py\ngera sinais", fillcolor="#FBE9E7"];
+        mlmodel [label="models/xgboost_v2.pkl", shape=note, fillcolor="#FBE9E7"];
+    }
+
+    // ───────────── Persistência ─────────────
+    subgraph cluster_store {
+        label="Persistência";
+        style="rounded"; color="#B0BEC5";
+        supabase [label="Supabase / PostgreSQL\nprices · signals · embeddings_meta\nincome_entries · portfolio_* · invoices · transactions", shape=cylinder, fillcolor="#ECEFF1"];
+        qdrant   [label="Qdrant :6333\ncoleção oraculo_financeiro\n(price_summary + news_article)", shape=cylinder, fillcolor="#ECEFF1"];
+        redis    [label="Redis :6379\ncache de cotações", shape=cylinder, fillcolor="#ECEFF1"];
+    }
+
+    // ───────────── Observabilidade ─────────────
+    mlflow [label="MLflow  ./mlruns\noraculo_rag (traces) · oraculo_sinais (training)", fillcolor="#EDE7F6"];
+
+    // ═════════════ Arestas ═════════════
+    react     -> routers   [label="HTTP/JSON (TanStack Query)"];
+    streamlit -> chain      [label="ask()"];
+    streamlit -> supabase   [label="sinais / cotações"];
+    streamlit -> redis      [label="cache 60s"];
+
+    bank    -> pf           [label="upload PDF"];
+    b3site  -> pf           [label="upload PDF"];
+    pf      -> openai;
+    pf      -> supabase     [label="upsert (SHA-256)"];
+    routers -> pf;
+    routers -> insights;
+    routers -> chain        [label="/api/b3 chat"];
+    routers -> supabase;
+    routers -> redis;
+
+    retriever -> qdrant;
+    retriever -> openai     [label="embed"];
+    chain     -> retriever;
+    chain     -> prompts;
+    chain     -> openai     [label="geração + juízes"];
+    chain     -> mlflow     [label="@mlflow.trace"];
+
+    yahoo -> ingest;
+    rss   -> ingest;
+    ingest  -> process;
+    process -> supabase     [label="upsert_prices"];
+    process -> qdrant       [label="embeddings"];
+    process -> openai       [label="embed"];
+    ingest  -> redis        [label="realtime quotes"];
+
+    supabase -> mlfeat;
+    mlfeat   -> mltrain;
+    mltrain  -> mlmodel;
+    mltrain  -> mlflow;
+    mlmodel  -> mlpred;
+    mlpred   -> supabase    [label="signals"];
+}

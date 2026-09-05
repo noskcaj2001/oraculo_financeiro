@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────
+# Segredos / credenciais  (NUNCA versionar)
+# ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ─────────────────────────────────────────────
+# Dados pessoais / sensíveis
+# ─────────────────────────────────────────────
+pdf_exemplo/          # faturas reais de cartão / extratos B3
+*.pdf
+data/backups/*.dump
+uploads/
+
+# ─────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# ─────────────────────────────────────────────
+# MLflow / ML artifacts
+# ─────────────────────────────────────────────
+mlruns/
+**/mlruns/
+mlartifacts/
+*.mlflow
+
+# ─────────────────────────────────────────────
+# Vetores / cache local
+# ─────────────────────────────────────────────
+qdrant_data/
+**/qdrant_data/
+*.rdb            # dump do Redis
+
+# ─────────────────────────────────────────────
+# Node / frontend
+# ─────────────────────────────────────────────
+node_modules/
+**/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─────────────────────────────────────────────
+# Logs
+# ─────────────────────────────────────────────
+*.log
+logs/
+
+# ─────────────────────────────────────────────
+# Editores / SO
+# ─────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# ─────────────────────────────────────────────
+# Claude Code (config local da máquina)
+# ─────────────────────────────────────────────
+.claude/settings.local.json
+
+# ─────────────────────────────────────────────
+# Anotações de trabalho (não versionar)
+# ─────────────────────────────────────────────
+docs/cloud.md
+docs/doc.md
+docs/new.md

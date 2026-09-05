@@ -1,0 +1,112 @@
+{
+  "categorias": [
+    {
+      "slug": "aluguel",
+      "label": "Aluguel",
+      "descricao": "Despesas relacionadas a aluguel de imóveis.",
+      "exemplos": [
+        "AIRBNB HMJ2E38",
+        "AIRBNB HMSQ3EA"
+      ]
+    },
+    {
+      "slug": "supermercado",
+      "label": "Supermercado",
+      "descricao": "Compras em supermercados e mercados.",
+      "exemplos": [
+        "CARREFOUR STO ANDRE",
+        "PAO DE ACUCAR-2468"
+      ]
+    },
+    {
+      "slug": "restaurantes",
+      "label": "Restaurantes",
+      "descricao": "Despesas em restaurantes e lanchonetes.",
+      "exemplos": [
+        "ALMEIDA PEREZ RESTAUR",
+        "OUTBACK - SHOPPIN"
+      ]
+    },
+    {
+      "slug": "delivery",
+      "label": "Delivery",
+      "descricao": "Pedidos de comida via aplicativos de entrega.",
+      "exemplos": [
+        "99Food *Marmitex Everyday",
+        "99Food *Outback Burgers"
+      ]
+    },
+    {
+      "slug": "transporte",
+      "label": "Transporte",
+      "descricao": "Despesas com transporte, incluindo combustível e serviços de transporte.",
+      "exemplos": [
+        "SEM PARAR",
+        "UBER PENDING"
+      ]
+    },
+    {
+      "slug": "compras_online",
+      "label": "Compras Online",
+      "descricao": "Despesas com compras em plataformas online.",
+      "exemplos": [
+        "AMAZON MARKETPLACE",
+        "MERCADOLIVRE MERCADOLIVRE"
+      ]
+    },
+    {
+      "slug": "roupas_acessorios",
+      "label": "Roupas e Acessórios",
+      "descricao": "Despesas com vestuário e acessórios.",
+      "exemplos": [
+        "RENTER 537 SHOPPING",
+        "HERING SP MARKET SHO"
+      ]
+    },
+    {
+      "slug": "saude_bemestar",
+      "label": "Saúde e Bem-estar",
+      "descricao": "Despesas com saúde, farmácias e bem-estar.",
+      "exemplos": [
+        "DROGASIL1270",
+        "DROGARIA SAO PAULO"
+      ]
+    },
+    {
+      "slug": "entretenimento",
+      "label": "Entretenimento",
+      "descricao": "Despesas com atividades de lazer e entretenimento.",
+      "exemplos": [
+        "CINEMARK BRASIL S.A EC",
+        "DISNEY PLUS"
+      ]
+    },
+    {
+      "slug": "esportes",
+      "label": "Esportes",
+      "descricao": "Despesas relacionadas a atividades esportivas e equipamentos.",
+      "exemplos": [
+        "DECATHLON",
+        "CENTAURO"
+      ]
+    },
+    {
+      "slug": "servicos",
+      "label": "Serviços",
+      "descricao": "Despesas com serviços diversos, como estética e manutenção.",
+      "exemplos": [
+        "ARRUDA SERVIÇOS ESTETI",
+        "CLAUDE.AI SUBSCRIPTION"
+      ]
+    },
+    {
+      "slug": "outros",
+      "label": "Outros",
+      "descricao": "Despesas que não se encaixam nas categorias acima.",
+      "exemplos": [
+        "ELECTROLUX ELECT",
+        "HOSPITAL EDMUNDO VASC"
+      ]
+    }
+  ]
+}
